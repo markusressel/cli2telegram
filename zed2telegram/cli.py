@@ -17,9 +17,17 @@ UPDATER = Updater(token=CONFIG.TELEGRAM_BOT_TOKEN.value, use_context=True)
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
+def get_event_data(ctx, param, value):
+    if not value and not click.get_text_stream('stdin').isatty():
+        return click.get_text_stream('stdin').read().strip()
+    else:
+        return value
+
+
 @click.command(context_settings=CONTEXT_SETTINGS)
 @click.version_option()
-@click.argument("event_text", type=str, nargs=-1)
+@click.argument("event_text", type=str)
+# @click.option("--event-text", type=str, prompt=True)
 def cli(event_text: str):
     """
     "notify" cli command
@@ -33,7 +41,7 @@ def cli(event_text: str):
     click.echo("Got event, sending...")
     chat_id = CONFIG.TELEGRAM_CHAT_ID.value
 
-    message_text = _prepare_message(list(event_text))
+    message_text = _prepare_message(event_text)
     if len(message_text) <= 0:
         click.echo("Message is empty, sending warning instead")
         message_text = "Received empty message!"
@@ -63,9 +71,11 @@ def cli(event_text: str):
     # $(cat -)
 
 
-def _prepare_message(lines: [str]) -> str:
-    if "\n" in lines[0]:
-        lines = lines[0].split("\n") + lines[1:]
+def _prepare_message(text: str) -> str:
+    if "\n" in text:
+        lines = text.split("\n")
+    else:
+        lines = [text]
 
     header = lines[0]
 
