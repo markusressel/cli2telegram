@@ -26,8 +26,8 @@ def get_event_data(ctx, param, value):
 
 @click.command(context_settings=CONTEXT_SETTINGS)
 @click.version_option()
-@click.argument("event_text", type=str)
-# @click.option("--event-text", type=str, prompt=True)
+# @click.argument("event_text", type=str)
+@click.option("--event-text", type=str, prompt=True)
 def cli(event_text: str):
     """
     "notify" cli command
