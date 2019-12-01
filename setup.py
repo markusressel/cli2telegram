@@ -38,7 +38,8 @@ elif GIT_BRANCH == "beta":
 elif GIT_BRANCH == "dev":
     DEVELOPMENT_STATUS = "Development Status :: 3 - Alpha"
     VERSION_NAME = "%s-dev" % VERSION_NUMBER
-elif os.environ.get("TRAVIS_BRANCH", None) == os.environ.get("TRAVIS_TAG", None) == "v{}".format(VERSION_NUMBER):
+elif os.environ.get("TRAVIS_BRANCH", None) == os.environ.get("TRAVIS_TAG", None) == "v{}".format(VERSION_NUMBER) or \
+        os.environ.get("GITHUB_RELEASE") == "True":
     # travis tagged release branch
     DEVELOPMENT_STATUS = "Development Status :: 5 - Production/Stable"
     VERSION_NAME = VERSION_NUMBER
