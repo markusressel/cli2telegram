@@ -9,7 +9,7 @@ from zed2telegram.config import Config
 
 LOGGER = logging.getLogger(__name__)
 LOGGER.setLevel(logging.DEBUG)
-LOGGER.addHandler(logging.FileHandler("/var/log/zed2telegram"))
+LOGGER.addHandler(logging.FileHandler("/tmp/zed2telegram"))
 
 CONFIG = Config()
 UPDATER = Updater(token=CONFIG.TELEGRAM_BOT_TOKEN.value, use_context=True)
