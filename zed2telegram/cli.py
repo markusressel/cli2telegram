@@ -37,7 +37,7 @@ def try_send_message(message: str):
             if not CONFIG.RETRY_ENABLED.value:
                 break
 
-            tried_for = started_trying - datetime.now()
+            tried_for = datetime.now() - started_trying
             if tried_for > CONFIG.RETRY_GIVE_UP_AFTER.value:
                 LOGGER.warning(f"Giving up after trying for: {tried_for}")
                 sys.exit(1)
