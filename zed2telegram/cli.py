@@ -8,6 +8,8 @@ from telegram.ext import Updater
 from zed2telegram.config import Config
 
 LOGGER = logging.getLogger(__name__)
+LOGGER.setLevel(logging.DEBUG)
+LOGGER.addHandler(logging.FileHandler("log.txt"))
 
 CONFIG = Config()
 UPDATER = Updater(token=CONFIG.TELEGRAM_BOT_TOKEN.value, use_context=True)
