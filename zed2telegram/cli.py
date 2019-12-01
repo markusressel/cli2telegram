@@ -85,12 +85,9 @@ def _prepare_message(lines: [str]) -> str:
     else:
         lines = [lines]
 
-    header = lines[0]
-
-    result = "\n".join([
-        f"*{header}*",
-        f"```",
-        *lines[1:],
+    result = "".join([
+        f"```\n",
+        *lines,
         "```"
     ])
 
