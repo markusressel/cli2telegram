@@ -17,3 +17,18 @@ def send_message(bot: Bot, chat_id: str, message: str, parse_mode: str = None, r
     emojized_text = emojize(message, use_aliases=True)
     return bot.send_message(chat_id=chat_id, parse_mode=parse_mode, text=emojized_text, reply_to_message_id=reply_to,
                             reply_markup=menu)
+
+
+def prepare_code_message(lines: [str]) -> str:
+    if "\n" in lines[0]:
+        lines = lines[0].split("\n") + lines[1:]
+    else:
+        lines = [lines]
+
+    result = "".join([
+        f"```\n",
+        *lines,
+        "```"
+    ])
+
+    return result
