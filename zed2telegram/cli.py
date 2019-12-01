@@ -38,6 +38,8 @@ def cli(event_text: str):
         LOGGER.debug("Received empty event data, ignoring.")
         return
 
+    LOGGER.debug(f"Event text {event_text}")
+
     click.echo("Got event, sending...")
     chat_id = CONFIG.TELEGRAM_CHAT_ID.value
 
