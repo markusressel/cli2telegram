@@ -37,7 +37,7 @@ def c_notify(event_text: str):
     click.echo("Got event, sending...")
     chat_id = CONFIG.TELEGRAM_CHAT_ID.value
 
-    message_text = _prepare_message(event_text)
+    message_text = _prepare_message(list(event_text))
     if len(message_text) <= 0:
         click.echo("Message is empty, sending warning instead")
         message_text = "Received empty message!"
