@@ -1,5 +1,7 @@
 from container_app_conf import ConfigBase
+from container_app_conf.entry.bool import BoolConfigEntry
 from container_app_conf.entry.string import StringConfigEntry
+from container_app_conf.entry.timedelta import TimeDeltaConfigEntry
 from container_app_conf.source.env_source import EnvSource
 from container_app_conf.source.toml_source import TomlSource
 from container_app_conf.source.yaml_source import YamlSource
@@ -7,6 +9,7 @@ from container_app_conf.source.yaml_source import YamlSource
 FILE_NAME = "zed2telegram"
 
 KEY_TELEGRAM = "telegram"
+KEY_RETRY = "retry"
 
 
 class Config(ConfigBase):
@@ -33,4 +36,22 @@ class Config(ConfigBase):
         required=True,
         secret=True,
         example="-123456789"
+    )
+
+    RETRY_ENABLED = BoolConfigEntry(
+        key_path=[KEY_RETRY, "enabled"],
+        description="Whether to retry sending messages or not.",
+        default=True,
+    )
+
+    RETRY_TIMEOUT = TimeDeltaConfigEntry(
+        key_path=[KEY_RETRY, "timeout"],
+        description="Timeout between tries.",
+        default="10s",
+    )
+
+    RETRY_GIVE_UP_AFTER = TimeDeltaConfigEntry(
+        key_path=[KEY_RETRY, "give_up_after"],
+        description="Time interval after which the retry should be cancelled.",
+        default="1h",
     )

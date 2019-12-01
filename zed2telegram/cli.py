@@ -1,5 +1,6 @@
 import logging
 import time
+from datetime import datetime
 
 import click
 from telegram.ext import Updater
@@ -38,6 +39,7 @@ def c_notify(event_text: str):
 
     message_text = _prepare_message(event_text)
 
+    started_trying = datetime.now()
     success = False
     while not success:
         try:
@@ -46,7 +48,15 @@ def c_notify(event_text: str):
         except Exception as ex:
             LOGGER.exception(ex)
             click.echo(ex, err=True)
-            success = False
+
+            if not CONFIG.RETRY_ENABLED.value:
+                break
+
+            tried_for = started_trying - datetime.now()
+            if tried_for > CONFIG.RETRY_GIVE_UP_AFTER.value:
+                click.echo(f"Giving up after trying for Tried for: {tried_for}")
+                break
+
             click.echo("Error sending message, retrying in 10 seconds...", color="yellow")
             time.sleep(10)
 
@@ -60,7 +70,7 @@ def _prepare_message(lines: [str]) -> str:
     result = "\n".join([
         f"*{header}*",
         f"```",
-        *lines[:1],
+        *lines[1:],
         "```"
     ])
 

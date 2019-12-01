@@ -1,0 +1,8 @@
+[telegram]
+bot_token="1234:6783948932dsdsadsadas"
+chat_id="12345678"
+
+[retry]
+enabled="True"
+timeout="10s"
+give_up_after="4h"
