@@ -68,6 +68,9 @@ def c_notify(event_text: str):
 
 
 def _prepare_message(lines: [str]) -> str:
+    if "\n" in lines[0]:
+        lines = lines[0].split("\n") + lines[1:]
+
     header = lines[0]
 
     result = "\n".join([
