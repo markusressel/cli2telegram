@@ -1,4 +1,5 @@
 import logging
+import sys
 import time
 from datetime import datetime
 
@@ -27,11 +28,16 @@ def get_event_data(ctx, param, value):
 @click.command(context_settings=CONTEXT_SETTINGS)
 @click.version_option()
 # @click.argument("event_text", type=str)
-@click.option("--event-text", type=str, prompt=True, multiple=True)
-def cli(event_text: str):
+# @click.option("--event-text", type=str, prompt=True, multiple=True)
+def cli():
     """
     "notify" cli command
     """
+
+    event_text = []
+    for line in sys.stdin:
+        event_text.append(line)
+
     from zed2telegram.util import send_message
 
     if not event_text or len(event_text) < 1:
@@ -73,11 +79,11 @@ def cli(event_text: str):
     # $(cat -)
 
 
-def _prepare_message(text: str) -> str:
-    if "\n" in text:
-        lines = text.split("\n")
+def _prepare_message(lines: [str]) -> str:
+    if "\n" in lines[0]:
+        lines = lines[0].split("\n") + lines[1:]
     else:
-        lines = [text]
+        lines = [lines]
 
     header = lines[0]
 
