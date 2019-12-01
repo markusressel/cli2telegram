@@ -15,16 +15,10 @@ UPDATER = Updater(token=CONFIG.TELEGRAM_BOT_TOKEN.value, use_context=True)
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
-# Cli returns command line requests
-@click.group(context_settings=CONTEXT_SETTINGS)
+@click.command(context_settings=CONTEXT_SETTINGS)
 @click.version_option()
-def cli():
-    pass
-
-
-@cli.command(name="notify")
 @click.argument("event_text", type=str, nargs=-1)
-def c_notify(event_text: str):
+def cli(event_text: str):
     """
     "notify" cli command
     """
