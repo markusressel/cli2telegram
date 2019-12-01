@@ -1,0 +1,4 @@
+container-app-conf==5.0.0
+click
+emoji
+python-telegram-bot>=12.2.0

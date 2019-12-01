@@ -1,0 +1,36 @@
+from container_app_conf import ConfigBase
+from container_app_conf.entry.string import StringConfigEntry
+from container_app_conf.source.env_source import EnvSource
+from container_app_conf.source.toml_source import TomlSource
+from container_app_conf.source.yaml_source import YamlSource
+
+FILE_NAME = "zed2telegram"
+
+KEY_TELEGRAM = "telegram"
+
+
+class Config(ConfigBase):
+
+    def __new__(cls, *args, **kwargs):
+        data_sources = [
+            EnvSource(),
+            YamlSource(FILE_NAME),
+            TomlSource(FILE_NAME)
+        ]
+        return super(Config, cls).__new__(cls, data_sources=data_sources)
+
+    TELEGRAM_BOT_TOKEN = StringConfigEntry(
+        key_path=[KEY_TELEGRAM, "bot_token"],
+        description="ID of the telegram chat to send messages to.",
+        required=True,
+        secret=True,
+        example="123456:ABC-DEF1234ghIkl-zyx57W2v1u123ew11"
+    )
+
+    TELEGRAM_CHAT_ID = StringConfigEntry(
+        key_path=[KEY_TELEGRAM, "chat_id"],
+        description="ID of the telegram chat to send messages to.",
+        required=True,
+        secret=True,
+        example="-123456789"
+    )
