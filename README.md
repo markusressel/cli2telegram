@@ -24,6 +24,11 @@ zed2telegram uses [container-app-conf](https://github.com/markusressel/container
 [telegram]
 chat_id="12345678"
 bot_token="123456789:ABCDEFGH1234567890AB-1234567890ABC"
+
+[retry]
+enabled="True"
+timeout="10s"
+give_up_after="4h"
 ```
 
 ## ZED
