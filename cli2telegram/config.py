@@ -1,3 +1,19 @@
+#   cli2telegram
+#  Copyright (c) 2019.  Markus Ressel
+#
+#  This program is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU Affero General Public License as
+#  published by the Free Software Foundation, either version 3 of the
+#  License, or (at your option) any later version.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU Affero General Public License for more details.
+#
+#  You should have received a copy of the GNU Affero General Public License
+#  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
 from container_app_conf import ConfigBase
 from container_app_conf.entry.bool import BoolConfigEntry
 from container_app_conf.entry.string import StringConfigEntry
@@ -6,9 +22,9 @@ from container_app_conf.source.env_source import EnvSource
 from container_app_conf.source.toml_source import TomlSource
 from container_app_conf.source.yaml_source import YamlSource
 
-FILE_NAME = "zed2telegram"
+FILE_NAME = "cli2telegram"
 
-KEY_ROOT = "zed2telegram"
+KEY_ROOT = "cli2telegram"
 KEY_TELEGRAM = "telegram"
 KEY_RETRY = "retry"
 

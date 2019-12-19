@@ -82,7 +82,7 @@ def read_requirements_file(file_name: str):
 
 
 setup(
-    name='zed2telegram',
+    name='cli2telegram',
     version=VERSION_NAME,
     description='Small utility to use Telegram as a notification backend for the ZFS Event Daemon.',
     long_description=readme(),
@@ -90,7 +90,7 @@ setup(
     license='AGPLv3+',
     author='Markus Ressel',
     author_email='mail@markusressel.de',
-    url='https://github.com/markusressel/zed2telegram',
+    url='https://github.com/markusressel/cli2telegram',
     packages=find_packages(),
     classifiers=[
         DEVELOPMENT_STATUS,
@@ -104,6 +104,6 @@ setup(
     install_requires=install_requirements(),
     tests_require=test_requirements(),
     entry_points={
-        'console_scripts': ['zed2telegram = zed2telegram.cli:cli']
+        'console_scripts': ['cli2telegram = cli2telegram.cli:cli']
     }
 )
