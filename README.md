@@ -44,7 +44,7 @@ or your custom venv manager of choice.
 
 ## File
 To be able to send you messages you have to provide a **bot token** and a **chat id**.
-cli2telegram uses [container-app-conf](https://github.com/markusressel/container-app-conf) so you can use YAML, TOML, or ENV to set those. Since `zed` will run your scripts as root, if you want to use a config file you have to put it in f.ex. `/root/.config/cli2telegram.toml`:
+cli2telegram uses [container-app-conf](https://github.com/markusressel/container-app-conf) so you can use YAML, TOML, or ENV to set those:
 
 ```toml
 [cli2telegram.telegram]
@@ -62,6 +62,8 @@ If you do not want to create a configuration file you can pass them using parame
 
 * `-b` - Telegram Bot Token
 * `-c` - Telegram Chat ID
+
+# Use Cases
 
 ## ZFS Event Daemon (ZED)
 To make `zed` call cli2telegram we will trick it and make it use cli2telegram as an E-Mail client.
@@ -90,6 +92,9 @@ ZED_NOTIFY_VERBOSE=1
 
 [...]
 ```
+
+Since `zed` will run your scripts as root, if you want to use a config file 
+you have to put it in f.ex. `/root/.config/cli2telegram.toml`.
 
 # Contributing
 
