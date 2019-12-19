@@ -31,13 +31,12 @@ LOGGER = logging.getLogger(__name__)
 # LOGGER.addHandler(logging.FileHandler("/tmp/cli2telegram"))
 
 CONFIG = Config(validate=False)
-UPDATER = Updater(token=CONFIG.TELEGRAM_BOT_TOKEN.value, use_context=True)
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 
 @click.command(context_settings=CONTEXT_SETTINGS)
-@click.option('-bt', '--bot-token', 'bot_token', default=None, type=str, help='Telegram Bot Token')
+@click.option('-b', '--bot-token', 'bot_token', default=None, type=str, help='Telegram Bot Token')
 @click.option('-c', '--chat-id', 'chat_id', default=None, type=str, help='Telegram Chat ID')
 @click.argument('lines', type=str, nargs=-1)
 @click.version_option()
@@ -45,6 +44,7 @@ def cli(bot_token: str or None, chat_id: str or None, lines: Tuple[str]):
     """
     cli entry method
     """
+
     if bot_token is not None:
         CONFIG.TELEGRAM_BOT_TOKEN.value = bot_token
     if chat_id is not None:
@@ -79,10 +79,11 @@ def _try_send_message(message: str):
     """
     started_trying = datetime.now()
     success = False
+    updater = Updater(token=CONFIG.TELEGRAM_BOT_TOKEN.value, use_context=True)
     while not success:
         try:
             chat_id = CONFIG.TELEGRAM_CHAT_ID.value
-            send_message(UPDATER.bot, chat_id, message, parse_mode="markdown")
+            send_message(updater.bot, chat_id, message, parse_mode="markdown")
             success = True
         except Exception as ex:
             LOGGER.exception(ex)

@@ -37,7 +37,8 @@ class Config(ConfigBase):
             YamlSource(FILE_NAME),
             TomlSource(FILE_NAME)
         ]
-        return super(Config, cls).__new__(cls, data_sources=data_sources)
+        kwargs["data_sources"] = data_sources
+        return super(Config, cls).__new__(cls, *args, **kwargs)
 
     TELEGRAM_BOT_TOKEN = StringConfigEntry(
         key_path=[KEY_ROOT, KEY_TELEGRAM, "bot_token"],
