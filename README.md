@@ -21,6 +21,9 @@ cli2telegram "Header" "This is a multiline message."
 echo My Message | cli2telegram
 
 printf "Header\nThis is a multiline message." | cli2telegram
+
+# Config via parameters
+printf "Message" | cli2telegram -b "123456789:ABCDEFG" -c "123456789"
 ``` 
 
 # Install
