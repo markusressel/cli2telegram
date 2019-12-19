@@ -8,6 +8,7 @@ from container_app_conf.source.yaml_source import YamlSource
 
 FILE_NAME = "zed2telegram"
 
+KEY_ROOT = "zed2telegram"
 KEY_TELEGRAM = "telegram"
 KEY_RETRY = "retry"
 
@@ -23,7 +24,7 @@ class Config(ConfigBase):
         return super(Config, cls).__new__(cls, data_sources=data_sources)
 
     TELEGRAM_BOT_TOKEN = StringConfigEntry(
-        key_path=[KEY_TELEGRAM, "bot_token"],
+        key_path=[KEY_ROOT, KEY_TELEGRAM, "bot_token"],
         description="ID of the telegram chat to send messages to.",
         required=True,
         secret=True,
@@ -31,7 +32,7 @@ class Config(ConfigBase):
     )
 
     TELEGRAM_CHAT_ID = StringConfigEntry(
-        key_path=[KEY_TELEGRAM, "chat_id"],
+        key_path=[KEY_ROOT, KEY_TELEGRAM, "chat_id"],
         description="ID of the telegram chat to send messages to.",
         required=True,
         secret=True,
@@ -39,19 +40,19 @@ class Config(ConfigBase):
     )
 
     RETRY_ENABLED = BoolConfigEntry(
-        key_path=[KEY_RETRY, "enabled"],
+        key_path=[KEY_ROOT, KEY_RETRY, "enabled"],
         description="Whether to retry sending messages or not.",
         default=True,
     )
 
     RETRY_TIMEOUT = TimeDeltaConfigEntry(
-        key_path=[KEY_RETRY, "timeout"],
+        key_path=[KEY_ROOT, KEY_RETRY, "timeout"],
         description="Timeout between tries.",
         default="10s",
     )
 
     RETRY_GIVE_UP_AFTER = TimeDeltaConfigEntry(
-        key_path=[KEY_RETRY, "give_up_after"],
+        key_path=[KEY_ROOT, KEY_RETRY, "give_up_after"],
         description="Time interval after which the retry should be cancelled.",
         default="1h",
     )
