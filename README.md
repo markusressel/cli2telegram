@@ -44,7 +44,7 @@ or your custom venv manager of choice.
 
 ## File
 To be able to send you messages you have to provide a **bot token** and a **chat id**.
-cli2telegram uses [container-app-conf](https://github.com/markusressel/container-app-conf) so you can use YAML, TOML, or ENV to set those. Since `zed` will run your scripts as root, if you want to use a config file you have to put it in f.ex. `/root/.config/zed2telegram.toml`:
+cli2telegram uses [container-app-conf](https://github.com/markusressel/container-app-conf) so you can use YAML, TOML, or ENV to set those. Since `zed` will run your scripts as root, if you want to use a config file you have to put it in f.ex. `/root/.config/cli2telegram.toml`:
 
 ```toml
 [cli2telegram.telegram]
