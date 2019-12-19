@@ -29,7 +29,7 @@ LOGGER = logging.getLogger(__name__)
 # LOGGER.setLevel(logging.DEBUG)
 # LOGGER.addHandler(logging.FileHandler("/tmp/cli2telegram"))
 
-CONFIG = Config()
+CONFIG = Config(validate=False)
 UPDATER = Updater(token=CONFIG.TELEGRAM_BOT_TOKEN.value, use_context=True)
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
@@ -38,8 +38,10 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 @click.command(context_settings=CONTEXT_SETTINGS)
 @click.option('-bt', '--bot-token', 'bot_token', default=None, type=str, help='Telegram Bot Token')
 @click.option('-c', '--chat-id', 'chat_id', default=None, type=str, help='Telegram Chat ID')
+@click.option('-m', '--message', 'message', default=None, type=str, help='Message to send')
+@click.option('-s', '--stdin', 'stdin', default=False, type=bool, help='Read message from stdin')
 @click.version_option()
-def cli(bot_token: str or None, chat_id: str or None):
+def cli(bot_token: str or None, chat_id: str or None, message: str or None, stdin: bool):
     """
     cli entry method
     """
@@ -47,26 +49,33 @@ def cli(bot_token: str or None, chat_id: str or None):
         CONFIG.TELEGRAM_BOT_TOKEN.value = bot_token
     if chat_id is not None:
         CONFIG.TELEGRAM_CHAT_ID.value = chat_id
+    CONFIG.validate()
 
-    event_text = []
-    # read event body from stdin
-    for line in sys.stdin:
-        event_text.append(line)
+    if stdin:
+        # read message from stdin
+        message_lines = []
+        for line in sys.stdin:
+            message_lines.append(line)
+    else:
+        if message is None or len(message) <= 0:
+            click.echo("No message provided", err=True)
+            return
 
-    LOGGER.debug(f"Event text: {event_text}")
+        message_lines = message.splitlines(keepends=True)
 
-    if not event_text or len(event_text) < 1:
-        LOGGER.debug("Received empty event data, ignoring.")
+    LOGGER.debug(f"Message text: {message_lines}")
+    if not message_lines or len(message_lines) < 1:
+        LOGGER.debug("Message is empty, ignoring.")
         return
 
-    LOGGER.debug("Processing stdin...")
-    message_text = prepare_code_message(event_text)
+    LOGGER.debug("Processing message...")
+    prepared_message = prepare_code_message(message_lines)
 
-    if len(message_text) <= 0:
+    if len(prepared_message) <= 0:
         LOGGER.warning("Message is empty, sending warning instead")
-        message_text = "Received empty message!"
+        prepared_message = f"Message is empty after processing, original message: {message_lines}"
 
-    _try_send_message(message_text)
+    _try_send_message(prepared_message)
 
     click.echo("Done.")
 
