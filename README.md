@@ -1,5 +1,5 @@
 # cli2telegram
-Small utility to send Telegram messages from the cli.
+Small utility to send Telegram messages from the CLI.
 
 This can be used to
 * use Telegram as a notification backend for the ZFS Event Daemon (zed)
@@ -42,20 +42,26 @@ or your custom venv manager of choice.
 
 # Configuration
 
-## cli2telegram
+## File
 To be able to send you messages you have to provide a **bot token** and a **chat id**.
 cli2telegram uses [container-app-conf](https://github.com/markusressel/container-app-conf) so you can use YAML, TOML, or ENV to set those. Since `zed` will run your scripts as root, if you want to use a config file you have to put it in f.ex. `/root/.config/zed2telegram.toml`:
 
 ```toml
-[telegram]
+[cli2telegram.telegram]
 chat_id="12345678"
 bot_token="123456789:ABCDEFGH1234567890AB-1234567890ABC"
 
-[retry]
+[cli2telegram.retry]
 enabled="True"
 timeout="10s"
 give_up_after="4h"
 ```
+
+## Parameters
+If you do not want to create a configuration file you can pass them using parameters:
+
+* `-b` - Telegram Bot Token
+* `-c` - Telegram Chat ID
 
 ## ZFS Event Daemon (ZED)
 To make `zed` call cli2telegram we will trick it and make it use cli2telegram as an E-Mail client.

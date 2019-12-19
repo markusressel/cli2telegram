@@ -23,7 +23,7 @@ import subprocess
 
 from setuptools import setup, find_packages
 
-VERSION_NUMBER = "1.0.1"
+VERSION_NUMBER = "1.0.0"
 
 GIT_BRANCH = subprocess.check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"])
 GIT_BRANCH = GIT_BRANCH.decode()  # convert to standard string
@@ -84,7 +84,7 @@ def read_requirements_file(file_name: str):
 setup(
     name='cli2telegram',
     version=VERSION_NAME,
-    description='Small utility to use Telegram as a notification backend for the ZFS Event Daemon.',
+    description='Small utility to send Telegram messages from the CLI.',
     long_description=readme(),
     long_description_content_type=readme_type(),
     license='AGPLv3+',
