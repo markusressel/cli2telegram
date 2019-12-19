@@ -77,8 +77,6 @@ def cli(bot_token: str or None, chat_id: str or None, message: str or None, stdi
 
     _try_send_message(prepared_message)
 
-    click.echo("Done.")
-
 
 def _try_send_message(message: str):
     """
