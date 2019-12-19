@@ -18,6 +18,7 @@ import logging
 import sys
 import time
 from datetime import datetime
+from typing import Tuple
 
 import click
 from telegram.ext import Updater
@@ -38,10 +39,9 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 @click.command(context_settings=CONTEXT_SETTINGS)
 @click.option('-bt', '--bot-token', 'bot_token', default=None, type=str, help='Telegram Bot Token')
 @click.option('-c', '--chat-id', 'chat_id', default=None, type=str, help='Telegram Chat ID')
-@click.option('-m', '--message', 'message', default=None, type=str, help='Message to send')
-@click.option('-s', '--stdin', 'stdin', default=False, type=bool, help='Read message from stdin')
+@click.argument('lines', type=str, nargs=-1)
 @click.version_option()
-def cli(bot_token: str or None, chat_id: str or None, message: str or None, stdin: bool):
+def cli(bot_token: str or None, chat_id: str or None, lines: Tuple[str]):
     """
     cli entry method
     """
@@ -51,29 +51,23 @@ def cli(bot_token: str or None, chat_id: str or None, message: str or None, stdi
         CONFIG.TELEGRAM_CHAT_ID.value = chat_id
     CONFIG.validate()
 
-    if stdin:
+    if len(lines) <= 0:
         # read message from stdin
-        message_lines = []
+        lines = []
         for line in sys.stdin:
-            message_lines.append(line)
-    else:
-        if message is None or len(message) <= 0:
-            click.echo("No message provided", err=True)
-            return
+            lines.append(line)
 
-        message_lines = message.splitlines(keepends=True)
-
-    LOGGER.debug(f"Message text: {message_lines}")
-    if not message_lines or len(message_lines) < 1:
+    LOGGER.debug(f"Message text: {lines}")
+    if not lines or len(lines) < 1:
         LOGGER.debug("Message is empty, ignoring.")
         return
 
     LOGGER.debug("Processing message...")
-    prepared_message = prepare_code_message(message_lines)
+    prepared_message = prepare_code_message(lines)
 
     if len(prepared_message) <= 0:
         LOGGER.warning("Message is empty, sending warning instead")
-        prepared_message = f"Message is empty after processing, original message: {message_lines}"
+        prepared_message = f"Message is empty after processing, original message: {lines}"
 
     _try_send_message(prepared_message)
 

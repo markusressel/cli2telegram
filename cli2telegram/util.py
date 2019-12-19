@@ -40,6 +40,8 @@ def prepare_code_message(lines: [str]) -> str:
     :param lines: text lines
     :return: prepared message
     """
+    lines = list(map(lambda x: x + "\n" if not x.endswith("\n") else x, lines))
+
     result = "".join([
         f"```\n",
         *lines,

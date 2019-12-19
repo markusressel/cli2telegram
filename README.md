@@ -4,6 +4,25 @@ Small utility to send Telegram messages from the cli.
 This can be used to
 * use Telegram as a notification backend for the ZFS Event Daemon (zed)
 
+## Features
+* [x] Read messages from argument or STDIN
+* [x] (Optional) Configuration file
+* [x] Retry sending messages for a specified amount of time
+
+## Examples
+
+```shell
+# From arguments
+cli2telegram "This is a message"
+
+cli2telegram "Header" "This is a multiline message."
+
+# From STDIN
+echo My Message | cli2telegram
+
+printf "Header\nThis is a multiline message." | cli2telegram
+``` 
+
 # Install
 
 To use this utility install it either using:
@@ -11,10 +30,12 @@ To use this utility install it either using:
 pip install cli2telegram
 ```
 
-or - if you dont want to install it globally - using [venv-install](https://github.com/markusressel/venv-install):
+or - if you don't want to install it globally - using [venv-install](https://github.com/markusressel/venv-install):
 ```
 venv-install cli2telegram cli2telegram
 ```
+
+or your custom venv manager of choice.
 
 # Configuration
 
