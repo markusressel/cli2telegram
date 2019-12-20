@@ -12,6 +12,8 @@ This can be used to
 ## Examples
 
 ```shell
+cli2telegram -h
+
 # From arguments
 cli2telegram "This is a message"
 
