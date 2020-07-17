@@ -80,12 +80,17 @@ and
 * set `ZED_EMAIL_PROG` to the path of the script, f.ex. `/usr/bin/cli2telegram`
   * it is important to note that zed does not seem to work if your command needs arguments to run
 ```
-
+# this must not be empty!
 ZED_EMAIL_ADDR="root"
 
 [...]
 
 ZED_EMAIL_PROG="/usr/bin/cli2telegram"
+
+[...]
+
+# this must not be empty!
+ZED_EMAIL_OPTS="#zfs #$(hostname)"
 
 [...]
 
