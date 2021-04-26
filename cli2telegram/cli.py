@@ -25,6 +25,7 @@ from telegram.ext import Updater
 
 from cli2telegram.config import Config
 from cli2telegram.util import send_message, prepare_code_message
+from cli2telegram.daemon import Daemon
 
 LOGGER = logging.getLogger(__name__)
 # LOGGER.setLevel(logging.DEBUG)
@@ -38,9 +39,11 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 @click.command(context_settings=CONTEXT_SETTINGS)
 @click.option('-b', '--bot-token', 'bot_token', default=None, type=str, help='Telegram Bot Token')
 @click.option('-c', '--chat-id', 'chat_id', default=None, type=str, help='Telegram Chat ID')
+@click.option('-d', '--daemon', 'daemon', default=False, type=bool, help='Daemon mode')
+@click.option('-p', '--pipe', 'pipe', default=None, type=str, help='Daemon mode pipe')
 @click.argument('lines', type=str, nargs=-1)
 @click.version_option()
-def cli(bot_token: str or None, chat_id: str or None, lines: Tuple[str]):
+def cli(bot_token: str or None, chat_id: str or None, lines: Tuple[str], daemon: bool, pipe: str or None):
     """
     cli entry method
     """
@@ -49,7 +52,14 @@ def cli(bot_token: str or None, chat_id: str or None, lines: Tuple[str]):
         CONFIG.TELEGRAM_BOT_TOKEN.value = bot_token
     if chat_id is not None:
         CONFIG.TELEGRAM_CHAT_ID.value = chat_id
+    if pipe is not None:
+        CONFIG.DAEMON_PIPE_PATH.value = pipe
     CONFIG.validate()
+
+    if daemon:
+        d = Daemon(CONFIG)
+        d.run()
+        return
 
     if len(lines) <= 0:
         # read message from stdin
