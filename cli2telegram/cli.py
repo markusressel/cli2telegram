@@ -16,15 +16,12 @@
 
 import logging
 import sys
-import time
-from datetime import datetime
 from typing import Tuple
 
 import click
-from telegram.ext import Updater
 
 from cli2telegram.config import Config
-from cli2telegram.util import send_message, prepare_code_message
+from cli2telegram.util import prepare_code_message, _try_send_message
 from cli2telegram.daemon import Daemon
 
 LOGGER = logging.getLogger(__name__)
@@ -79,37 +76,7 @@ def cli(bot_token: str or None, chat_id: str or None, lines: Tuple[str], daemon:
         LOGGER.warning("Message is empty, sending warning instead")
         prepared_message = f"Message is empty after processing, original message: {lines}"
 
-    _try_send_message(prepared_message)
-
-
-def _try_send_message(message: str):
-    """
-    Sends a message
-    :param message: the message to send
-    """
-    started_trying = datetime.now()
-    success = False
-    updater = Updater(token=CONFIG.TELEGRAM_BOT_TOKEN.value, use_context=True)
-    while not success:
-        try:
-            chat_id = CONFIG.TELEGRAM_CHAT_ID.value
-            send_message(updater.bot, chat_id, message, parse_mode="markdown")
-            success = True
-        except Exception as ex:
-            LOGGER.exception(ex)
-
-            if not CONFIG.RETRY_ENABLED.value:
-                break
-
-            tried_for = datetime.now() - started_trying
-            if tried_for > CONFIG.RETRY_GIVE_UP_AFTER.value:
-                LOGGER.warning(f"Giving up after trying for: {tried_for}")
-                sys.exit(1)
-
-            timeout_seconds = CONFIG.RETRY_TIMEOUT.value.total_seconds()
-            LOGGER.error(f"Error sending message, retrying in {timeout_seconds} seconds...")
-            time.sleep(timeout_seconds)
-
+    _try_send_message(prepared_message, CONFIG, LOGGER, False)
 
 if __name__ == '__main__':
     cli()

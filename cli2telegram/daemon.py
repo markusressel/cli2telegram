@@ -16,117 +16,88 @@
 
 import logging
 import sys
-import time
-import sys
 import os
+from time import time, sleep
 from signal import signal, SIGINT, SIGTERM
-from datetime import datetime
 
 import threading, queue
 
 from telegram.ext import Updater
 
 from cli2telegram.config import Config
-from cli2telegram.util import send_message, prepare_code_message
+from cli2telegram.util import _try_send_message
 
-LOGGER = logging.getLogger(__name__)
-LOGGER.setLevel(logging.DEBUG)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.WARNING)
 handler = logging.StreamHandler(sys.stdout)
-handler.setLevel(logging.DEBUG)
+handler.setLevel(logging.WARNING)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 handler.setFormatter(formatter)
-LOGGER.addHandler(handler)
+logger.addHandler(handler)
 
 class Daemon:
-    def __init__(self, CONFIG:Config):
-        self.CONFIG = CONFIG
-        self.RUNNING = True
-        self.PIPE_NAME = CONFIG.DAEMON_PIPE_PATH.value
+    def __init__(self, config:Config):
+        self.config = config
+        self.running = True
+        self.pipe_name = config.DAEMON_PIPE_PATH.value
         self.message_queue = queue.Queue()
 
     def run(self):
         try:
-            os.mkfifo(self.PIPE_NAME)
+            os.mkfifo(self.pipe_name)
         except OSError as ose:
-            LOGGER.debug(ose)
-            if os.path.exists(self.PIPE_NAME):
+            logger.debug(ose)
+            if os.path.exists(self.pipe_name):
                 raise
-     
+
         signal(SIGINT, self.signal_handler) # ctrl+c
         signal(SIGTERM, self.signal_handler) # systemctl stop
 
         threading.Thread(target=self.send_message_worker, daemon=True).start()
 
-        LOGGER.info("daemon listening on {}".format(self.PIPE_NAME))
+        logger.info("daemon listening on {}".format(self.pipe_name))
 
         while True:
-            with open(self.PIPE_NAME) as pipe:
-                LOGGER.debug("wating for input from pipe")
+            with open(self.pipe_name) as pipe:
+                logger.debug("wating for input from pipe")
                 pipe_buffer = ''
                 while True:
                     data = pipe.read()
-                    LOGGER.debug(f"received {data}")
-                    if len(data) == 0 and self.RUNNING:
-                        LOGGER.debug("No data from pipe. Sending buffer to telegram.");
-                        self.message_queue.put(pipe_buffer)
+                    logger.debug(f"received {data}")
+                    if len(data) == 0 and self.running:
+                        logger.debug("No data from pipe. Sending buffer to telegram.")
+                        formatted_buffer = "".join(["```\n", pipe_buffer, "```"])
+                        self.message_queue.put(formatted_buffer)
                         pipe_buffer = ''
                         break
-                    elif not self.RUNNING:
+                    elif not self.running:
                         break
                     else:
                         pipe_buffer += data
-            if not self.RUNNING:
+            if not self.running:
                 break
 
     def send_message_worker(self):
         while True:
             message = self.message_queue.get()
-            LOGGER.debug(f"Got {message} from queue. sending...")
-            self._try_send_message(message)
+            logger.debug(f"Got {message} from queue. sending...")
+            _try_send_message(message, self.config, logger, True)
             self.message_queue.task_done()
 
-    def _try_send_message(self, message: str):
-        """
-        Sends a message
-        :param message: the message to send
-        """
-        started_trying = datetime.now()
-        success = False
-        updater = Updater(token=self.CONFIG.TELEGRAM_BOT_TOKEN.value, use_context=True)
-        while not success:
-            try:
-                chat_id = self.CONFIG.TELEGRAM_CHAT_ID.value
-                send_message(updater.bot, chat_id, message, parse_mode="markdown")
-                success = True
-            except Exception as ex:
-                LOGGER.exception(ex)
-
-                if not self.CONFIG.RETRY_ENABLED.value:
-                    break
-
-                tried_for = datetime.now() - started_trying
-                if tried_for > self.CONFIG.RETRY_GIVE_UP_AFTER.value:
-                    LOGGER.warning(f"Giving up after trying for: {tried_for}. Placing message back in queue.")
-                    self.message_queue.put(message)
-                    break
-
-                timeout_seconds = self.CONFIG.RETRY_TIMEOUT.value.total_seconds()
-                LOGGER.error(f"Error sending message, retrying in {timeout_seconds} seconds...")
-                time.sleep(timeout_seconds)
-
     def signal_handler(self, signal_received, frame):
-        self.RUNNING = False
-        
-        LOGGER.debug(f"Caught {signal_received}. Attempting to send all messages from queue.")
-        
+        self.running = False
+
+        logger.debug(f"Caught {signal_received}. Attempting to send all messages from queue.")
+
         try:
-            os.unlink(self.PIPE_NAME)
+            os.unlink(self.pipe_name)
         except OSError as ose:
-            if os.path.exists(self.PIPE_NAME):
-                LOGGER.warning("Unable to clean up named pipe")
-                raise
+            if os.path.exists(self.pipe_name):
+                logger.warning("Unable to clean up named pipe")
+                logger.exception(ose)
         
-        self.message_queue.join()
+        stop = time() + 5
+        while self.message_queue.unfinished_tasks and time() < stop:
+            sleep(1)
 
         sys.exit(0)
-       
