@@ -1,10 +1,14 @@
-daemon_pipe_path="/tmp/cli2telegram"
+[cli2telegram]
+log_level="WARNING"
 
-[telegram]
+[cli2telegram.telegram]
 bot_token="1234:6783948932dsdsadsadas"
 chat_id="12345678"
 
-[retry]
+[cli2telegram.retry]
 enabled="True"
 timeout="10s"
 give_up_after="4h"
+
+[cli2telegram.daemon]
+pipe_path="/tmp/cli2telegram"

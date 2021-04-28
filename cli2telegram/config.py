@@ -13,9 +13,12 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import logging
+import re
 
 from container_app_conf import ConfigBase
 from container_app_conf.entry.bool import BoolConfigEntry
+from container_app_conf.entry.int import IntConfigEntry
 from container_app_conf.entry.string import StringConfigEntry
 from container_app_conf.entry.timedelta import TimeDeltaConfigEntry
 from container_app_conf.source.env_source import EnvSource
@@ -28,6 +31,8 @@ KEY_ROOT = "cli2telegram"
 KEY_TELEGRAM = "telegram"
 KEY_RETRY = "retry"
 
+KEY_DAEMON = "daemon"
+
 
 class Config(ConfigBase):
 
@@ -39,6 +44,16 @@ class Config(ConfigBase):
         ]
         kwargs["data_sources"] = data_sources
         return super(Config, cls).__new__(cls, *args, **kwargs)
+
+    LOG_LEVEL = StringConfigEntry(
+        description="Log level",
+        key_path=[
+            KEY_ROOT,
+            "log_level"
+        ],
+        regex=re.compile(f"{'|'.join(logging._nameToLevel.keys())}", flags=re.IGNORECASE),
+        default="INFO",
+    )
 
     TELEGRAM_BOT_TOKEN = StringConfigEntry(
         key_path=[KEY_ROOT, KEY_TELEGRAM, "bot_token"],
@@ -73,9 +88,16 @@ class Config(ConfigBase):
         description="Time interval after which the retry should be cancelled.",
         default="1h",
     )
+
     DAEMON_PIPE_PATH = StringConfigEntry(
-        key_path=[KEY_ROOT, "daemon_pipe_path"],
+        key_path=[KEY_ROOT, KEY_DAEMON, "pipe_path"],
         description="Unix named pipe path.",
         default="/tmp/cli2telegram",
         example="/path/to/some/named/pipe"
+    )
+
+    DAEMON_PIPE_PERMISSIONS = IntConfigEntry(
+        key_path=[KEY_ROOT, KEY_DAEMON, "pipe_permissions"],
+        description="Unix file permissions for the named pipe.",
+        default=0o666,
     )

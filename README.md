@@ -42,35 +42,41 @@ To use this utility install it either using:
 pip install cli2telegram
 ```
 
-or - if you don't want to install it globally - using [venv-install](https://github.com/markusressel/venv-install):
+or - if you don't want to install it globally - using f.ex. [venv-install](https://github.com/markusressel/venv-install):
 ```
 venv-install cli2telegram cli2telegram
 ```
 
-or your custom venv manager of choice.
+or your custom `venv` manager of choice.
 
 # Configuration
 
-## File
 To be able to send you messages you have to provide a **bot token** and a **chat id**.
-cli2telegram uses [container-app-conf](https://github.com/markusressel/container-app-conf) so you can use YAML, TOML, or ENV to set those:
-
-```toml
-[cli2telegram.telegram]
-chat_id="12345678"
-bot_token="123456789:ABCDEFGH1234567890AB-1234567890ABC"
-
-[cli2telegram.retry]
-enabled="True"
-timeout="10s"
-give_up_after="4h"
-```
+You can configure cli2telegram using cli parameters, a configuration file,
+environment variables, or a combination of them.
 
 ## Parameters
-If you do not want to create a configuration file you can pass them using parameters:
 
-* `-b` - Telegram Bot Token
-* `-c` - Telegram Chat ID
+| Name                | Type   | Description                               |
+|---------------------|--------|-------------------------------------------|
+| `-b`, `--bot-token` | String | Telegram Bot Token                        |
+| `-c`, `--chat-id`   | String | Telegram Chat ID                          |
+| `-d`, `--daemon`    | Flag   | Run as a daemon                           |
+| `-p`, `--pipe`      | String | File path to the pipe used in daemon mode |
+
+## File
+cli2telegram uses [container-app-conf](https://github.com/markusressel/container-app-conf) so you can use YAML, TOML, or ENV to set those.
+
+Have a look at the [cli2telegram.toml_example](cli2telegram.toml_example) file to get an idea.
+
+# Daemon
+
+When running cli2telegram as a daemon, the pipe will close for a brief amount of time between receiving input messages.
+If you are sending multiple messages to the pipe using f.ex. a script, make sure to wait a bit (f.ex. 0.5 seconds)
+between sending messages, otherwise:
+* multiple messages may be received as one
+* messages may get lost
+* you may receive a `Broken pipe` error
 
 # Use Cases
 

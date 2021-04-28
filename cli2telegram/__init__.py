@@ -13,3 +13,15 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import datetime
+from datetime import timedelta
+
+
+class RetryLimitReachedException(Exception):
+    """
+    Helper exception to handle giving up retries
+    """
+
+    def __init__(self, started_trying: datetime, tried_for: timedelta):
+        self.message = f"All retries failed after {tried_for}. Started trying at {started_trying}."
+        super().__init__(self.message)

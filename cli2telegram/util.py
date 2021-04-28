@@ -13,13 +13,17 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
+import logging
+import time
+from datetime import datetime, timedelta
 
 from telegram import Bot, InlineKeyboardMarkup, Message
-from cli2telegram.config import Config
-from logging import Logger
-from datetime import datetime
-
 from telegram.ext import Updater
+
+from cli2telegram import RetryLimitReachedException
+
+LOGGER = logging.getLogger(__name__)
+
 
 def send_message(bot: Bot, chat_id: str, message: str, parse_mode: str = None, reply_to: int = None,
                  menu: InlineKeyboardMarkup = None) -> Message:
@@ -35,7 +39,7 @@ def send_message(bot: Bot, chat_id: str, message: str, parse_mode: str = None, r
     from emoji import emojize
     emojized_text = emojize(message, use_aliases=True)
     return bot.send_message(chat_id=chat_id, parse_mode=parse_mode, text=emojized_text, reply_to_message_id=reply_to,
-                            reply_markup=menu)
+                            reply_markup=menu, timeout=10)
 
 
 def prepare_code_message(lines: [str]) -> str:
@@ -53,35 +57,36 @@ def prepare_code_message(lines: [str]) -> str:
     ])
     return result
 
-def _try_send_message(message: str, config: Config, logger: Logger, daemon: bool):
+
+def _try_send_message(bot_token: str, chat_id: str, message: str,
+                      retry: bool, retry_timeout: timedelta, give_up_after: timedelta):
     """
     Sends a message
+    :param bot_token: telegram bot token
+    :param chat_id: chat id
     :param message: the message to send
-    :param config: current configuration data
-    :param daemon: whether or not cli2telegram is in daemon mode
+    :param retry: whether to retry if something fails
+    :param retry_timeout: time to wait between retries
+    :param give_up_after: when to give up trying
     """
     started_trying = datetime.now()
     success = False
-    updater = Updater(token=config.TELEGRAM_BOT_TOKEN.value, use_context=True)
     while not success:
         try:
-            chat_id = config.TELEGRAM_CHAT_ID.value
-            send_message(updater.bot, chat_id, message, parse_mode="markdown")
+            updater = Updater(token=bot_token, use_context=True)
+            send_message(bot=updater.bot, chat_id=chat_id, message=message, parse_mode="markdown")
             success = True
         except Exception as ex:
-            logger.exception(ex)
+            LOGGER.exception(ex)
 
-            if not config.RETRY_ENABLED.value:
+            if not retry:
                 break
 
             tried_for = datetime.now() - started_trying
-            if tried_for > config.RETRY_GIVE_UP_AFTER.value:
-                logger.warning(f"Giving up after trying for: {tried_for}")
-                if not daemon:
-                    sys.exit(1)
-                else:
-                    break
+            if tried_for > give_up_after:
+                LOGGER.warning(f"Giving up after trying for: {tried_for}")
+                raise RetryLimitReachedException(started_trying, tried_for)
 
-            timeout_seconds = config.RETRY_TIMEOUT.value.total_seconds()
-            logger.error(f"Error sending message, retrying in {timeout_seconds} seconds...")
+            timeout_seconds = retry_timeout.total_seconds()
+            LOGGER.error(f"Error sending message, retrying in {timeout_seconds} seconds...")
             time.sleep(timeout_seconds)
