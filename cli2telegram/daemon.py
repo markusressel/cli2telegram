@@ -99,8 +99,7 @@ class Daemon:
                     message=prepared_message,
                     retry=self.config.RETRY_ENABLED.value,
                     retry_timeout=self.config.RETRY_TIMEOUT.value,
-                    give_up_after=self.config.RETRY_GIVE_UP_AFTER.value,
-                    logger=LOGGER)
+                    give_up_after=self.config.RETRY_GIVE_UP_AFTER.value)
                 LOGGER.debug(f"Message sent successfully")
             except RetryLimitReachedException as ex:
                 LOGGER.exception(ex)

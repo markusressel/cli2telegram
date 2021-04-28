@@ -93,8 +93,7 @@ def cli(bot_token: str or None, chat_id: str or None, lines: Tuple[str], daemon:
         message=prepared_message,
         retry=CONFIG.RETRY_ENABLED.value,
         retry_timeout=CONFIG.RETRY_TIMEOUT.value,
-        give_up_after=CONFIG.RETRY_GIVE_UP_AFTER.value,
-        logger=LOGGER)
+        give_up_after=CONFIG.RETRY_GIVE_UP_AFTER.value)
 
 
 if __name__ == '__main__':
