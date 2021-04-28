@@ -73,3 +73,9 @@ class Config(ConfigBase):
         description="Time interval after which the retry should be cancelled.",
         default="1h",
     )
+    DAEMON_PIPE_PATH = StringConfigEntry(
+        key_path=[KEY_ROOT, "daemon_pipe_path"],
+        description="Unix named pipe path.",
+        default="/tmp/cli2telegram",
+        example="/path/to/some/named/pipe"
+    )

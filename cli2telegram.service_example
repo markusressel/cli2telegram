@@ -1,0 +1,28 @@
+[Unit]
+Description=cli2telegram Daemon
+After=syslog.target network.target
+
+[Service]
+# Change the user and group variables here.
+User=cli2telegram
+Group=cli2telegram
+
+Type=simple
+
+# Change the path to cli2telegram here
+ExecStart=/path/to/cli2telegram -d
+TimeoutStopSec=20
+KillMode=process
+Restart=on-failure
+StandardOutput=file:/var/log/cli2telegram.log
+StandardError=file:/var/log/cli2telegram.err
+
+# These lines optionally isolate (sandbox) cli2telegram
+# Make sure to add any paths it might use to the list below (space-separated).
+#ReadWritePaths=/path/to/cli2telegram /path/to/named/pipe
+#ProtectSystem=strict
+#PrivateDevices=true
+#ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

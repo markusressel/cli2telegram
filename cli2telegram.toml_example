@@ -1,3 +1,5 @@
+daemon_pipe_path="/tmp/cli2telegram"
+
 [telegram]
 bot_token="1234:6783948932dsdsadsadas"
 chat_id="12345678"
