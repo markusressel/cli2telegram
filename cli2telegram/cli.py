@@ -21,8 +21,8 @@ from typing import Tuple
 import click
 
 from cli2telegram.config import Config
-from cli2telegram.util import prepare_code_message, _try_send_message
 from cli2telegram.daemon import Daemon
+from cli2telegram.util import prepare_code_message, _try_send_message
 
 LOGGER = logging.getLogger(__name__)
 # LOGGER.setLevel(logging.DEBUG)
@@ -36,7 +36,7 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 @click.command(context_settings=CONTEXT_SETTINGS)
 @click.option('-b', '--bot-token', 'bot_token', default=None, type=str, help='Telegram Bot Token')
 @click.option('-c', '--chat-id', 'chat_id', default=None, type=str, help='Telegram Chat ID')
-@click.option('-d', '--daemon', 'daemon', default=False, type=bool, help='Daemon mode')
+@click.option('-d', '--daemon', 'daemon', is_flag=True, help='Daemon mode')
 @click.option('-p', '--pipe', 'pipe', default=None, type=str, help='Daemon mode pipe')
 @click.argument('lines', type=str, nargs=-1)
 @click.version_option()
