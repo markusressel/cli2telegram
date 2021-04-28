@@ -1,13 +1,16 @@
 # cli2telegram
 Small utility to send Telegram messages from the CLI.
 
-This can be used to
+This can f.ex. be used to
+* quickly send arbitrary messages to a Telegram chat of your choice
+* use it as a replacement for the "mail" program on linux
 * use Telegram as a notification backend for the ZFS Event Daemon (zed)
 
 ## Features
 * [x] Read messages from argument or STDIN
 * [x] (Optional) Configuration file
 * [x] Retry sending messages for a specified amount of time
+* [x] Run as a daemon and echo messages into a linux pipe
 
 ## Examples
 
@@ -26,6 +29,10 @@ printf "Header\nThis is a multiline message." | cli2telegram
 
 # Config via parameters
 printf "Message" | cli2telegram -b "123456789:ABCDEFG" -c "123456789"
+
+# as a Daemon
+cli2telegram -d -p "/tmp/cli2telegram"
+echo "hello world!" > /tmp/cli2telegram
 ``` 
 
 # Install
