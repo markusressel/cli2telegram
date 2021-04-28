@@ -21,7 +21,7 @@
 
 from setuptools import setup, find_packages
 
-VERSION_NUMBER = "1.1.0"
+VERSION_NUMBER = "1.1.1"
 
 DEVELOPMENT_STATUS = "Development Status :: 5 - Production/Stable"
 VERSION_NAME = VERSION_NUMBER
