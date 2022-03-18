@@ -25,8 +25,9 @@ from cli2telegram import RetryLimitReachedException
 LOGGER = logging.getLogger(__name__)
 
 
-def send_message(bot: Bot, chat_id: str, message: str, parse_mode: str = None, reply_to: int = None,
-                 menu: InlineKeyboardMarkup = None) -> Message:
+def send_message(
+    bot: Bot, chat_id: str, message: str, parse_mode: str = None, reply_to: int = None, menu: InlineKeyboardMarkup = None
+) -> Message:
     """
     Sends a text message to the given chat
     :param bot: the bot
@@ -38,28 +39,33 @@ def send_message(bot: Bot, chat_id: str, message: str, parse_mode: str = None, r
     """
     from emoji import emojize
     emojized_text = emojize(message, use_aliases=True)
-    return bot.send_message(chat_id=chat_id, parse_mode=parse_mode, text=emojized_text, reply_to_message_id=reply_to,
-                            reply_markup=menu, timeout=10)
+    return bot.send_message(
+        chat_id=chat_id, parse_mode=parse_mode, text=emojized_text, reply_to_message_id=reply_to, reply_markup=menu, timeout=10
+    )
 
-
-def prepare_code_message(lines: [str]) -> str:
+def split_message(lines: [str]) -> [str]:
     """
-    Prepares the given lines of text to send them as a code block message
+    Split lines into multiple messages if the maximum number of character is exceeded.
     :param lines: text lines
+    :return: list of messages
+    """
+    message = "".join(lines)
+    return [message[i:i + 4096] for i in range(0, len(message), 4096)]
+
+def prepare_code_message(message: str) -> str:
+    """
+    Prepares the given message as a code block message
+    :param message: message
     :return: prepared message
     """
-    lines = list(map(lambda x: x + "\n" if not x.endswith("\n") else x, lines))
-
-    result = "".join([
-        f"```\n",
-        *lines,
-        "```"
-    ])
-    return result
+    return f"```\n{message}```"
 
 
-def _try_send_message(bot_token: str, chat_id: str, message: str,
-                      retry: bool, retry_timeout: timedelta, give_up_after: timedelta):
+def _try_send_message(
+    bot_token: str,
+    chat_id: str, message: str,
+    retry: bool, retry_timeout: timedelta, give_up_after: timedelta
+):
     """
     Sends a message
     :param bot_token: telegram bot token

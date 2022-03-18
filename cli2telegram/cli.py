@@ -22,7 +22,7 @@ import click
 
 from cli2telegram.config import Config
 from cli2telegram.daemon import Daemon
-from cli2telegram.util import prepare_code_message, _try_send_message
+from cli2telegram.util import split_message, prepare_code_message, _try_send_message
 
 LOGGER = logging.getLogger(__name__)
 # LOGGER.setLevel(logging.DEBUG)
@@ -35,12 +35,13 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
 @click.command(context_settings=CONTEXT_SETTINGS)
 @click.option('-b', '--bot-token', 'bot_token', default=None, type=str, help='Telegram Bot Token')
-@click.option('-c', '--chat-id', 'chat_id', default=None, type=str, help='Telegram Chat ID')
+@click.option('-i', '--chat-id', 'chat_id', default=None, type=str, help='Telegram Chat ID')
+@click.option('-c', '--code-block', 'code_block', is_flag=True, default=False, help='Send message in a code block')
 @click.option('-d', '--daemon', 'daemon', is_flag=True, help='Daemon mode')
 @click.option('-p', '--pipe', 'pipe', default=None, type=str, help='File path to the pipe used in daemon mode')
 @click.argument('lines', type=str, nargs=-1)
 @click.version_option()
-def cli(bot_token: str or None, chat_id: str or None, lines: Tuple[str], daemon: bool, pipe: str or None):
+def cli(bot_token: str or None, chat_id: str or None, code_block: bool, lines: Tuple[str], daemon: bool, pipe: str or None):
     """
     cli entry method
     """
@@ -81,19 +82,24 @@ def cli(bot_token: str or None, chat_id: str or None, lines: Tuple[str], daemon:
         return
 
     LOGGER.debug("Processing message...")
-    prepared_message = prepare_code_message(lines)
+    messages = split_message(lines)
 
-    if len(prepared_message) <= 0:
+    if len(messages) <= 0:
         LOGGER.warning("Message is empty, sending warning instead")
-        prepared_message = f"Message is empty after processing, original message: '{lines}'"
-
-    _try_send_message(
-        bot_token=CONFIG.TELEGRAM_BOT_TOKEN.value,
-        chat_id=CONFIG.TELEGRAM_CHAT_ID.value,
-        message=prepared_message,
-        retry=CONFIG.RETRY_ENABLED.value,
-        retry_timeout=CONFIG.RETRY_TIMEOUT.value,
-        give_up_after=CONFIG.RETRY_GIVE_UP_AFTER.value)
+        messages = [f"Message is empty after processing, original message: '{lines}'"]
+    
+    for message in messages:
+        if code_block:
+            message = prepare_code_message(message)
+        
+        _try_send_message(
+            bot_token=CONFIG.TELEGRAM_BOT_TOKEN.value,
+            chat_id=CONFIG.TELEGRAM_CHAT_ID.value,
+            message=message,
+            retry=CONFIG.RETRY_ENABLED.value,
+            retry_timeout=CONFIG.RETRY_TIMEOUT.value,
+            give_up_after=CONFIG.RETRY_GIVE_UP_AFTER.value
+        )
 
 
 if __name__ == '__main__':
