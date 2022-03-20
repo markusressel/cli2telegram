@@ -58,7 +58,10 @@ def prepare_code_message(message: str) -> str:
     :param message: message
     :return: prepared message
     """
-    return f"```\n{message}```"
+    if message[0] == "\n":
+        return f"```{message}```"
+    else:
+        return f"```\n{message}```"
 
 
 def _try_send_message(
