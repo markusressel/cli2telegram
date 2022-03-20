@@ -29,7 +29,10 @@ echo My Message | cli2telegram
 printf "Header\nThis is a multiline message." | cli2telegram
 
 # Config via parameters
-printf "Message" | cli2telegram -b "123456789:ABCDEFG" -i "123456789"
+printf "Message" | cli2telegram -b "123456789:ABCDEFG" -c "123456789"
+
+# Config via parameters and send message in a code block
+printf "Message" | cli2telegram -b "123456789:ABCDEFG" -c "123456789" -C
 
 # as a Daemon
 cli2telegram -d -p "/tmp/cli2telegram"
@@ -61,8 +64,8 @@ environment variables, or a combination of them.
 | Name                 | Type   | Description                               |
 |----------------------|--------|-------------------------------------------|
 | `-b`, `--bot-token`  | String | Telegram Bot Token                        |
-| `-i`, `--chat-id`    | String | Telegram Chat ID                          |
-| `-c`, `--code-block` | String | Send message inside a code block          |
+| `-c`, `--chat-id`    | String | Telegram Chat ID                          |
+| `-C`, `--code-block` | String | Send message inside a code block          |
 | `-d`, `--daemon`     | Flag   | Run as a daemon                           |
 | `-p`, `--pipe`       | String | File path to the pipe used in daemon mode |
 
