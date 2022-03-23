@@ -83,10 +83,6 @@ def cli(bot_token: str or None, chat_id: str or None, code_block: bool, lines: T
 
     LOGGER.debug("Processing message...")
     messages = split_message(lines)
-
-    if len(messages) <= 0:
-        LOGGER.warning("Message is empty, sending warning instead")
-        messages = [f"Message is empty after processing, original message: '{lines}'"]
     
     for message in messages:
         if code_block:
