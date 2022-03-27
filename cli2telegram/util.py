@@ -46,13 +46,12 @@ def send_message(
     )
 
 
-def split_message(lines: [str]) -> [str]:
+def split_message(message: str) -> [str]:
     """
     Split lines into multiple messages if the maximum number of character is exceeded.
-    :param lines: text lines
+    :param message: original message
     :return: list of messages
     """
-    message = "".join(lines)
     return [message[i:i + 4096] for i in range(0, len(message), 4096)]
 
 

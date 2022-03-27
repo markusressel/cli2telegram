@@ -14,11 +14,21 @@
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from cli2telegram.util import prepare_code_message
+from cli2telegram.util import prepare_code_message, split_message
 from tests import TestBase
 
 
 class MessageProcessingTest(TestBase):
+
+    def test_long_message_is_split(self):
+        std_in = "A" * 4096 + "B" * 4096
+        messages = split_message(std_in)
+
+        assert len(messages) == 2
+        for m in messages:
+            assert len(m) <= 4096
+        assert "B" not in messages[0]
+        assert "A" not in messages[1]
 
     def test_prepare_code_message(self):
         message = "Code"

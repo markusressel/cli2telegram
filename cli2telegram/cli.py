@@ -82,12 +82,13 @@ def cli(bot_token: str or None, chat_id: str or None, code_block: bool, lines: T
         return
 
     LOGGER.debug("Processing message...")
-    messages = split_message(lines)
-    
+    text = "".join(lines)
+    messages = split_message(text)
+
     for message in messages:
         if code_block:
             message = prepare_code_message(message)
-        
+
         _try_send_message(
             bot_token=CONFIG.TELEGRAM_BOT_TOKEN.value,
             chat_id=CONFIG.TELEGRAM_CHAT_ID.value,
