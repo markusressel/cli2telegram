@@ -21,7 +21,7 @@
 
 from setuptools import setup, find_packages
 
-VERSION_NUMBER = "1.1.2"
+VERSION_NUMBER = "2.0.0"
 
 DEVELOPMENT_STATUS = "Development Status :: 5 - Production/Stable"
 VERSION_NAME = VERSION_NUMBER
@@ -79,6 +79,7 @@ setup(
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
     ],
     install_requires=install_requirements(),
     tests_require=test_requirements(),
