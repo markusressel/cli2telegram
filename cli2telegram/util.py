@@ -21,6 +21,7 @@ from telegram import Bot, InlineKeyboardMarkup, Message
 from telegram.ext import Updater
 
 from cli2telegram import RetryLimitReachedException
+from cli2telegram.const import CODEBLOCK_MARKER_START, CODEBLOCK_MARKER_END
 
 LOGGER = logging.getLogger(__name__)
 
@@ -46,13 +47,14 @@ def send_message(
     )
 
 
-def split_message(message: str) -> [str]:
+def split_message(message: str, length: int) -> [str]:
     """
     Split lines into multiple messages if the maximum number of character is exceeded.
     :param message: original message
+    :param length: max length of a single chunk
     :return: list of messages
     """
-    return [message[i:i + 4096] for i in range(0, len(message), 4096)]
+    return [message[i:i + length] for i in range(0, len(message), length)]
 
 
 def prepare_code_message(message: str) -> str:
@@ -62,15 +64,11 @@ def prepare_code_message(message: str) -> str:
     :param message: message
     :return: prepared message
     """
-    marker = "```"
-    marker_start = f"{marker}\n"
-    marker_end = f"\n{marker}"
-
     result = message
-    if not result.startswith(marker_start):
-        result = marker_start + result
-    if not result.endswith(marker_end):
-        result = result + marker_end
+    if not result.startswith(CODEBLOCK_MARKER_START):
+        result = CODEBLOCK_MARKER_START + result
+    if not result.endswith(CODEBLOCK_MARKER_END):
+        result = result + CODEBLOCK_MARKER_END
 
     return result
 

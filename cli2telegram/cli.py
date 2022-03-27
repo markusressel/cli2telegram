@@ -16,11 +16,12 @@
 
 import logging
 import sys
-from typing import Tuple
+from typing import Tuple, List
 
 import click
 
 from cli2telegram.config import Config
+from cli2telegram.const import CODEBLOCK_MARKER_END, CODEBLOCK_MARKER_START, TELEGRAM_MESSAGE_LENGTH_LIMIT
 from cli2telegram.daemon import Daemon
 from cli2telegram.util import split_message, prepare_code_message, _try_send_message
 
@@ -41,7 +42,8 @@ CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 @click.option('-p', '--pipe', 'pipe', default=None, type=str, help='File path to the pipe used in daemon mode')
 @click.argument('lines', type=str, nargs=-1)
 @click.version_option()
-def cli(bot_token: str or None, chat_id: str or None, code_block: bool, lines: Tuple[str], daemon: bool, pipe: str or None):
+def cli(bot_token: str or None, chat_id: str or None, code_block: bool, lines: Tuple[str], daemon: bool,
+        pipe: str or None):
     """
     cli entry method
     """
@@ -81,14 +83,10 @@ def cli(bot_token: str or None, chat_id: str or None, code_block: bool, lines: T
         LOGGER.warning("Message is empty, ignoring.")
         return
 
-    LOGGER.debug("Processing message...")
     text = "".join(lines)
-    messages = split_message(text)
+    messages = prepare_messages(text, code_block)
 
     for message in messages:
-        if code_block:
-            message = prepare_code_message(message)
-
         _try_send_message(
             bot_token=CONFIG.TELEGRAM_BOT_TOKEN.value,
             chat_id=CONFIG.TELEGRAM_CHAT_ID.value,
@@ -97,6 +95,23 @@ def cli(bot_token: str or None, chat_id: str or None, code_block: bool, lines: T
             retry_timeout=CONFIG.RETRY_TIMEOUT.value,
             give_up_after=CONFIG.RETRY_GIVE_UP_AFTER.value
         )
+
+
+def prepare_messages(text: str, code_block: bool) -> List[str]:
+    result = []
+
+    LOGGER.debug("Processing message...")
+
+    length = TELEGRAM_MESSAGE_LENGTH_LIMIT
+    if code_block:
+        length -= (len(CODEBLOCK_MARKER_START) + len(CODEBLOCK_MARKER_END))
+    messages = split_message(text, length)
+    for message in messages:
+        if code_block:
+            message = prepare_code_message(message)
+        result.append(message)
+
+    return result
 
 
 if __name__ == '__main__':

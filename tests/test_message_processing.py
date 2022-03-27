@@ -13,20 +13,49 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
+from cli2telegram.cli import prepare_messages
 from cli2telegram.util import prepare_code_message, split_message
 from tests import TestBase
 
 
 class MessageProcessingTest(TestBase):
 
-    def test_long_message_is_split(self):
+    def test_long_message_with_codeblock_doesnt_exceed_limit(self):
         std_in = "A" * 4096 + "B" * 4096
-        messages = split_message(std_in)
+        messages = prepare_messages(std_in, True)
 
-        assert len(messages) == 2
+        assert len(messages) == 3
         for m in messages:
             assert len(m) <= 4096
+        assert "B" not in messages[0]
+        assert "A" in messages[1]
+        assert "B" in messages[1]
+        assert "A" not in messages[2]
+
+    def test_long_message_doesnt_exceed_limit(self):
+        std_in = "A" * 4096 + "B" * 4096
+        messages = prepare_messages(std_in, False)
+
+        assert len(messages) == 2
+        for i, m in enumerate(messages):
+            if i < len(messages) - 1:
+                assert len(m) == 4096
+            else:
+                assert len(m) <= 4096
+        assert "B" not in messages[0]
+        assert "A" not in messages[1]
+
+    def test_long_message_is_split(self):
+        length = 32
+        std_in = "A" * length + "B" * length
+        messages = split_message(std_in, length)
+
+        assert len(messages) == 2
+        for i, m in enumerate(messages):
+            if i < len(messages) - 1:
+                assert len(m) == length
+            else:
+                assert len(m) <= length
         assert "B" not in messages[0]
         assert "A" not in messages[1]
 
