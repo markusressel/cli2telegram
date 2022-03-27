@@ -26,7 +26,8 @@ LOGGER = logging.getLogger(__name__)
 
 
 def send_message(
-    bot: Bot, chat_id: str, message: str, parse_mode: str = None, reply_to: int = None, menu: InlineKeyboardMarkup = None
+        bot: Bot, chat_id: str, message: str, parse_mode: str = None, reply_to: int = None,
+        menu: InlineKeyboardMarkup = None
 ) -> Message:
     """
     Sends a text message to the given chat
@@ -40,8 +41,10 @@ def send_message(
     from emoji import emojize
     emojized_text = emojize(message, use_aliases=True)
     return bot.send_message(
-        chat_id=chat_id, parse_mode=parse_mode, text=emojized_text, reply_to_message_id=reply_to, reply_markup=menu, timeout=10
+        chat_id=chat_id, parse_mode=parse_mode, text=emojized_text, reply_to_message_id=reply_to, reply_markup=menu,
+        timeout=10
     )
+
 
 def split_message(lines: [str]) -> [str]:
     """
@@ -52,22 +55,31 @@ def split_message(lines: [str]) -> [str]:
     message = "".join(lines)
     return [message[i:i + 4096] for i in range(0, len(message), 4096)]
 
+
 def prepare_code_message(message: str) -> str:
     """
-    Prepares the given message as a code block message
+    Wraps the given message inside of a code block.
+    If the message already is contained within a code block, nothing is changed.
     :param message: message
     :return: prepared message
     """
-    if message[0] == "\n":
-        return f"```{message}```"
-    else:
-        return f"```\n{message}```"
+    marker = "```"
+    marker_start = f"{marker}\n"
+    marker_end = f"\n{marker}"
+
+    result = message
+    if not result.startswith(marker_start):
+        result = marker_start + result
+    if not result.endswith(marker_end):
+        result = result + marker_end
+
+    return result
 
 
 def _try_send_message(
-    bot_token: str,
-    chat_id: str, message: str,
-    retry: bool, retry_timeout: timedelta, give_up_after: timedelta
+        bot_token: str,
+        chat_id: str, message: str,
+        retry: bool, retry_timeout: timedelta, give_up_after: timedelta
 ):
     """
     Sends a message
