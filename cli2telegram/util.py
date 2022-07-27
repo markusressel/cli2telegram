@@ -40,7 +40,7 @@ def send_message(
     :param menu: inline keyboard menu markup
     """
     from emoji import emojize
-    emojized_text = emojize(message, use_aliases=True)
+    emojized_text = emojize(message, language='alias')
     return bot.send_message(
         chat_id=chat_id, parse_mode=parse_mode, text=emojized_text, reply_to_message_id=reply_to, reply_markup=menu,
         timeout=10
