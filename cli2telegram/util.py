@@ -18,7 +18,7 @@ import time
 from datetime import datetime, timedelta
 
 from telegram import Bot, InlineKeyboardMarkup, Message
-from telegram.ext import Updater
+from telegram.ext import Application
 
 from cli2telegram import RetryLimitReachedException
 from cli2telegram.const import CODEBLOCK_MARKER_START, CODEBLOCK_MARKER_END
@@ -26,7 +26,7 @@ from cli2telegram.const import CODEBLOCK_MARKER_START, CODEBLOCK_MARKER_END
 LOGGER = logging.getLogger(__name__)
 
 
-def send_message(
+async def send_message(
         bot: Bot, chat_id: str, message: str, parse_mode: str = None, reply_to: int = None,
         menu: InlineKeyboardMarkup = None
 ) -> Message:
@@ -41,9 +41,9 @@ def send_message(
     """
     from emoji import emojize
     emojized_text = emojize(message, language='alias')
-    return bot.send_message(
+    return await bot.send_message(
         chat_id=chat_id, parse_mode=parse_mode, text=emojized_text, reply_to_message_id=reply_to, reply_markup=menu,
-        timeout=10
+        connect_timeout=10, read_timeout=10, write_timeout=10
     )
 
 
@@ -73,14 +73,14 @@ def prepare_code_message(message: str) -> str:
     return result
 
 
-def _try_send_message(
-        bot_token: str,
+async def try_send_message(
+        app: Application,
         chat_id: str, message: str,
         retry: bool, retry_timeout: timedelta, give_up_after: timedelta
 ):
     """
     Sends a message
-    :param bot_token: telegram bot token
+    :param app: telegram application
     :param chat_id: chat id
     :param message: the message to send
     :param retry: whether to retry if something fails
@@ -91,8 +91,7 @@ def _try_send_message(
     success = False
     while not success:
         try:
-            updater = Updater(token=bot_token, use_context=True)
-            send_message(bot=updater.bot, chat_id=chat_id, message=message, parse_mode="markdown")
+            await send_message(bot=app.bot, chat_id=chat_id, message=message, parse_mode="markdown")
             success = True
         except Exception as ex:
             LOGGER.exception(ex)

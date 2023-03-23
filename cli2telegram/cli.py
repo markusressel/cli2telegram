@@ -13,17 +13,19 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
+import asyncio
 import logging
 import sys
 from typing import Tuple, List
 
 import click
+from telegram.ext import Application
 
+from cli2telegram import util
 from cli2telegram.config import Config
 from cli2telegram.const import CODEBLOCK_MARKER_END, CODEBLOCK_MARKER_START, TELEGRAM_MESSAGE_LENGTH_LIMIT
 from cli2telegram.daemon import Daemon
-from cli2telegram.util import split_message, prepare_code_message, _try_send_message
+from cli2telegram.util import split_message, prepare_code_message
 
 LOGGER = logging.getLogger(__name__)
 # LOGGER.setLevel(logging.DEBUG)
@@ -32,6 +34,8 @@ LOGGER = logging.getLogger(__name__)
 CONFIG = Config(validate=False)
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
+
+loop = asyncio.get_event_loop()
 
 
 @click.command(context_settings=CONTEXT_SETTINGS)
@@ -86,15 +90,13 @@ def cli(bot_token: str or None, chat_id: str or None, code_block: bool, lines: T
     text = "".join(lines)
     messages = prepare_messages(text, code_block)
 
-    for message in messages:
-        _try_send_message(
-            bot_token=CONFIG.TELEGRAM_BOT_TOKEN.value,
-            chat_id=CONFIG.TELEGRAM_CHAT_ID.value,
-            message=message,
-            retry=CONFIG.RETRY_ENABLED.value,
-            retry_timeout=CONFIG.RETRY_TIMEOUT.value,
-            give_up_after=CONFIG.RETRY_GIVE_UP_AFTER.value
-        )
+    app = Application.builder().token(CONFIG.TELEGRAM_BOT_TOKEN.value).build()
+
+    tasks = asyncio.gather(
+        _send_messages(app, messages),
+    )
+
+    loop.run_until_complete(tasks)
 
 
 def prepare_messages(text: str, code_block: bool) -> List[str]:
@@ -112,6 +114,18 @@ def prepare_messages(text: str, code_block: bool) -> List[str]:
         result.append(message)
 
     return result
+
+
+async def _send_messages(app, messages):
+    for message in messages:
+        await util.try_send_message(
+            app=app,
+            chat_id=CONFIG.TELEGRAM_CHAT_ID.value,
+            message=message,
+            retry=CONFIG.RETRY_ENABLED.value,
+            retry_timeout=CONFIG.RETRY_TIMEOUT.value,
+            give_up_after=CONFIG.RETRY_GIVE_UP_AFTER.value
+        )
 
 
 if __name__ == '__main__':

@@ -13,20 +13,19 @@
 #
 #  You should have received a copy of the GNU Affero General Public License
 #  along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
+import asyncio
 import logging
 import os
-import queue
 import sys
-import threading
 from signal import signal, SIGINT, SIGTERM
 from time import time, sleep
 
-from telegram.ext import Updater
+import aiofiles
+from telegram.ext import ApplicationBuilder
 
 from cli2telegram import RetryLimitReachedException
 from cli2telegram.config import Config
-from cli2telegram.util import _try_send_message, prepare_code_message
+from cli2telegram.util import try_send_message, prepare_code_message
 
 LOGGER = logging.getLogger(__name__)
 HANDLER = logging.StreamHandler(sys.stdout)
@@ -40,8 +39,8 @@ class Daemon:
         self.config = config
         self.running = True
         self.pipe_file_path = config.DAEMON_PIPE_PATH.value
-        self.message_queue = queue.Queue()
-        self.updater = Updater(token=config.TELEGRAM_BOT_TOKEN.value, use_context=True)
+        self.message_queue = asyncio.Queue()
+        self._app = ApplicationBuilder().token(config.TELEGRAM_BOT_TOKEN.value).build()
 
     def run(self):
         if os.path.exists(self.pipe_file_path):
@@ -55,22 +54,27 @@ class Daemon:
         signal(SIGINT, self.signal_handler)  # ctrl+c
         signal(SIGTERM, self.signal_handler)  # systemctl stop
 
-        threading.Thread(target=self.send_message_worker, daemon=True).start()
+        loop = asyncio.get_event_loop()
+        tasks = asyncio.gather(
+            self.send_message_worker(),
+            self.read_pipe_loop(),
+        )
+        loop.run_until_complete(tasks)
+        loop.close()
 
+    async def read_pipe_loop(self):
         LOGGER.info(f"Daemon is listening for input on {self.pipe_file_path}...")
-        self.read_pipe_loop(self.pipe_file_path)
-
-    def read_pipe_loop(self, path: str):
         while True:
             LOGGER.debug("Waiting for new input on pipe")
-            with open(path) as pipe:
+
+            async with aiofiles.open(self.pipe_file_path, 'r') as pipe:
                 pipe_buffer = ''
                 while True:
-                    data = pipe.read()
+                    data = await pipe.read()
                     LOGGER.debug(f"received: {data}")
                     if len(data) == 0 and self.running:
                         LOGGER.debug("No new data from pipe, adding current buffer to message queue")
-                        self.message_queue.put(pipe_buffer)
+                        await self.message_queue.put(pipe_buffer)
                         break
                     elif not self.running:
                         break
@@ -80,21 +84,23 @@ class Daemon:
             if not self.running:
                 break
 
-    def send_message_worker(self):
+    async def send_message_worker(self):
         while True:
-            message = self.message_queue.get()
+            LOGGER.debug("Waiting for item in message queue...")
+            message = await self.message_queue.get()
+            LOGGER.debug(f"Got new message: {message}")
 
             if not message.strip():
                 LOGGER.warning("Message is empty, ignoring")
                 self.message_queue.task_done()
                 continue
 
-            prepared_message = prepare_code_message(message.splitlines())
+            prepared_message = prepare_code_message(message)
             LOGGER.debug(f"Trying to send message from queue...")
 
             try:
-                _try_send_message(
-                    bot_token=self.config.TELEGRAM_BOT_TOKEN.value,
+                await try_send_message(
+                    app=self._app,
                     chat_id=self.config.TELEGRAM_CHAT_ID.value,
                     message=prepared_message,
                     retry=self.config.RETRY_ENABLED.value,
@@ -120,7 +126,8 @@ class Daemon:
                 LOGGER.warning("Unable to clean up named pipe")
 
         stop = time() + 5
-        while self.message_queue.unfinished_tasks and time() < stop:
+
+        while self.message_queue._unfinished_tasks and time() < stop:
             sleep(1)
 
         sys.exit(0)
