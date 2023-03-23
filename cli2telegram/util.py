@@ -43,7 +43,7 @@ async def send_message(
     emojized_text = emojize(message, language='alias')
     return await bot.send_message(
         chat_id=chat_id, parse_mode=parse_mode, text=emojized_text, reply_to_message_id=reply_to, reply_markup=menu,
-        timeout=10
+        connect_timeout=10, read_timeout=10, write_timeout=10
     )
 
 
@@ -73,7 +73,7 @@ def prepare_code_message(message: str) -> str:
     return result
 
 
-def _try_send_message(
+async def try_send_message(
         app: Application,
         chat_id: str, message: str,
         retry: bool, retry_timeout: timedelta, give_up_after: timedelta
@@ -91,7 +91,7 @@ def _try_send_message(
     success = False
     while not success:
         try:
-            send_message(bot=app.bot, chat_id=chat_id, message=message, parse_mode="markdown")
+            await send_message(bot=app.bot, chat_id=chat_id, message=message, parse_mode="markdown")
             success = True
         except Exception as ex:
             LOGGER.exception(ex)

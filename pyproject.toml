@@ -38,6 +38,7 @@ container-app-conf = "*"
 click = "*"
 emoji = "*"
 python-telegram-bot = "*"
+aiofiles = "*"
 
 [tool.poetry.dev-dependencies]
 pytest = "*"
