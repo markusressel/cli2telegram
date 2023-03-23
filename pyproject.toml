@@ -1,0 +1,51 @@
+[tool.poetry]
+name = "cli2telegram"
+version = "2.0.0"
+description = "Small utility to send Telegram messages from the CLI."
+
+license = "AGPL-3.0-or-later"
+
+authors = [
+    "Markus Ressel <mail@markusressel.de>",
+]
+
+readme = 'README.md'
+
+repository = "https://github.com/markusressel/cli2telegram"
+homepage = "https://github.com/markusressel/cli2telegram"
+
+keywords = ['cli', 'telegram', 'notification']
+
+classifiers = [
+    "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3",
+    'Programming Language :: Python :: 3.7',
+    'Programming Language :: Python :: 3.8',
+    'Programming Language :: Python :: 3.9',
+    "Programming Language :: Python :: 3.10",
+    "Development Status :: 5 - Production/Stable"
+]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.dependencies]
+python = "^3.7"  # Compatible python versions must be declared here
+
+container-app-conf = "*"
+click = "*"
+emoji = "*"
+python-telegram-bot = "*"
+
+[tool.poetry.dev-dependencies]
+pytest = "*"
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests",
+]
+
+[tool.poetry.scripts]
+cli2telegram = 'cli2telegram.cli:cli'
