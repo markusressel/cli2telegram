@@ -19,6 +19,7 @@ import sys
 from typing import Tuple, List
 
 import click
+from telegram.ext import ApplicationBuilder
 
 from cli2telegram.config import Config
 from cli2telegram.const import CODEBLOCK_MARKER_END, CODEBLOCK_MARKER_START, TELEGRAM_MESSAGE_LENGTH_LIMIT
@@ -86,9 +87,11 @@ def cli(bot_token: str or None, chat_id: str or None, code_block: bool, lines: T
     text = "".join(lines)
     messages = prepare_messages(text, code_block)
 
+    app = ApplicationBuilder().token(CONFIG.TELEGRAM_BOT_TOKEN.value).build()
+
     for message in messages:
         _try_send_message(
-            bot_token=CONFIG.TELEGRAM_BOT_TOKEN.value,
+            app=app,
             chat_id=CONFIG.TELEGRAM_CHAT_ID.value,
             message=message,
             retry=CONFIG.RETRY_ENABLED.value,

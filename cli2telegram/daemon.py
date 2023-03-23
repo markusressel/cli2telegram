@@ -22,7 +22,7 @@ import threading
 from signal import signal, SIGINT, SIGTERM
 from time import time, sleep
 
-from telegram.ext import Updater
+from telegram.ext import ApplicationBuilder
 
 from cli2telegram import RetryLimitReachedException
 from cli2telegram.config import Config
@@ -41,7 +41,7 @@ class Daemon:
         self.running = True
         self.pipe_file_path = config.DAEMON_PIPE_PATH.value
         self.message_queue = queue.Queue()
-        self.updater = Updater(token=config.TELEGRAM_BOT_TOKEN.value, use_context=True)
+        self._app = ApplicationBuilder().token(config.TELEGRAM_BOT_TOKEN.value).build()
 
     def run(self):
         if os.path.exists(self.pipe_file_path):
@@ -94,7 +94,7 @@ class Daemon:
 
             try:
                 _try_send_message(
-                    bot_token=self.config.TELEGRAM_BOT_TOKEN.value,
+                    app=self._app,
                     chat_id=self.config.TELEGRAM_CHAT_ID.value,
                     message=prepared_message,
                     retry=self.config.RETRY_ENABLED.value,
