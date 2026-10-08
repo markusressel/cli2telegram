@@ -54,13 +54,13 @@ class Daemon:
         signal(SIGINT, self.signal_handler)  # ctrl+c
         signal(SIGTERM, self.signal_handler)  # systemctl stop
 
-        loop = asyncio.get_event_loop()
-        tasks = asyncio.gather(
+        asyncio.run(self._run_workers())
+
+    async def _run_workers(self):
+        await asyncio.gather(
             self.send_message_worker(),
             self.read_pipe_loop(),
         )
-        loop.run_until_complete(tasks)
-        loop.close()
 
     async def read_pipe_loop(self):
         LOGGER.info(f"Daemon is listening for input on {self.pipe_file_path}...")

@@ -35,8 +35,6 @@ CONFIG = Config(validate=False)
 
 CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
 
-loop = asyncio.get_event_loop()
-
 
 @click.command(context_settings=CONTEXT_SETTINGS)
 @click.option('-b', '--bot-token', 'bot_token', default=None, type=str, help='Telegram Bot Token')
@@ -92,11 +90,7 @@ def cli(bot_token: str or None, chat_id: str or None, code_block: bool, lines: T
 
     app = Application.builder().token(CONFIG.TELEGRAM_BOT_TOKEN.value).build()
 
-    tasks = asyncio.gather(
-        _send_messages(app, messages),
-    )
-
-    loop.run_until_complete(tasks)
+    asyncio.run(_send_messages(app, messages))
 
 
 def prepare_messages(text: str, code_block: bool) -> List[str]:
