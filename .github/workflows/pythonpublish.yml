@@ -2,7 +2,9 @@ name: Upload Python Package
 
 on:
   release:
-    types: [ created ]
+    # "created" does not fire when a draft release is published later
+    types: [ published ]
+  workflow_dispatch:
 
 env:
   GITHUB_RELEASE: True
