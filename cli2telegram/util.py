@@ -18,6 +18,7 @@ import time
 from datetime import datetime, timedelta
 
 from telegram import Bot, InlineKeyboardMarkup, Message
+from telegram.error import BadRequest, Forbidden, InvalidToken
 from telegram.ext import Application
 
 from cli2telegram import RetryLimitReachedException
@@ -88,11 +89,25 @@ async def try_send_message(
     :param give_up_after: when to give up trying
     """
     started_trying = datetime.now()
+    parse_mode = "markdown"
     success = False
     while not success:
         try:
-            await send_message(bot=app.bot, chat_id=chat_id, message=message, parse_mode="markdown")
+            await send_message(bot=app.bot, chat_id=chat_id, message=message, parse_mode=parse_mode)
             success = True
+        except BadRequest as ex:
+            if parse_mode is not None and "parse entities" in str(ex).lower():
+                # characters like "_" or "*" in the text are not valid markdown, so send it as plain text
+                LOGGER.warning(f"Message is not valid markdown, sending it as plain text instead: {ex}")
+                parse_mode = None
+                continue
+            # the request itself is wrong, retrying would never help
+            LOGGER.exception(ex)
+            raise
+        except (InvalidToken, Forbidden) as ex:
+            # wrong token or the bot is not allowed to write to the chat, retrying would never help
+            LOGGER.exception(ex)
+            raise
         except Exception as ex:
             LOGGER.exception(ex)
 
